@@ -6,7 +6,7 @@ if (!URL.canParse(process.env.WORDPRESS_API_URL)) {
 }
 
 const { protocol, hostname, port, pathname } = new URL(
-  process.env.WORDPRESS_API_URL,
+  process.env.WORDPRESS_API_URL
 );
 
 /** @type {import('next').NextConfig} */
@@ -18,6 +18,18 @@ module.exports = {
         hostname,
         port,
         pathname: `${pathname}/**`,
+      },
+      {
+        hostname: "thecommit.dream.press",
+      },
+      {
+        hostname: "the-commit.local",
+      },
+      {
+        hostname: "secure.gravatar.com",
+      },
+      {
+        hostname: "2.gravatar.com",
       },
     ],
   },

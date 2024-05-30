@@ -39,7 +39,7 @@ export async function getPreviewPost(id, idType = "DATABASE_ID") {
     }`,
     {
       variables: { id, idType },
-    },
+    }
   );
   return data.post;
 }
@@ -57,6 +57,21 @@ export async function getAllPostsWithSlug() {
     }
   `);
   return data?.posts;
+}
+
+export async function getAllPagesWithSlug() {
+  const data = await fetchAPI(`
+    {
+      pages(first: 10000) {
+        edges {
+          node {
+            slug
+          }
+        }
+      }
+    }
+  `);
+  return data?.pages;
 }
 
 export async function getAllPostsForHome(preview) {
@@ -95,10 +110,34 @@ export async function getAllPostsForHome(preview) {
         onlyEnabled: !preview,
         preview,
       },
-    },
+    }
   );
 
   return data?.posts;
+}
+
+export async function getPage(slug) {
+  console.log("slug = ", slug);
+  const data = await fetchAPI(
+    `
+    {
+      pages {
+        id
+        title
+        content
+        date
+        featuredImage {
+          node {
+            id
+            sourceUrl
+          }
+        }
+      }
+    }
+    `
+  );
+
+  return data;
 }
 
 export async function getPostAndMorePosts(slug, preview, previewData) {
@@ -139,6 +178,7 @@ export async function getPostAndMorePosts(slug, preview, previewData) {
         edges {
           node {
             name
+            slug
           }
         }
       }
@@ -190,7 +230,7 @@ export async function getPostAndMorePosts(slug, preview, previewData) {
         id: isDraft ? postPreview.id : slug,
         idType: isDraft ? "DATABASE_ID" : "SLUG",
       },
-    },
+    }
   );
 
   // Draft posts may not have an slug
@@ -209,4 +249,83 @@ export async function getPostAndMorePosts(slug, preview, previewData) {
   if (data.posts.edges.length > 2) data.posts.edges.pop();
 
   return data;
+}
+
+export async function getAllCategories() {
+  const data = await fetchAPI(`
+    query FetchAllCategories {
+      categories {
+        edges {
+          node {
+            id
+            name
+            slug
+          }
+        }
+      }
+    }
+  `);
+  return data?.categories;
+}
+
+export async function getCategoryAndAssociatedPosts(categorySlug: string) {
+  const data = await fetchAPI(
+    `
+    fragment AuthorFields on User {
+      name
+      firstName
+      lastName
+      avatar {
+        url
+      }
+    }
+    query fetchCategoryAndAssociatedPosts {
+      categories(where: { slug: "${categorySlug}" } ) {
+        edges {
+          node {
+            id
+            name
+            slug
+            posts {
+              edges {
+                node {
+                  title
+                  excerpt
+                  slug
+                  date
+                  featuredImage {
+                    node {
+                      sourceUrl
+                    }
+                  }
+                  author {
+                    node {
+                      ...AuthorFields
+                    }
+                  }
+                  categories {
+                    edges {
+                      node {
+                        name
+                        slug
+                      }
+                    }
+                  }
+                  tags {
+                    edges {
+                      node {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `
+  );
+  return data?.categories.edges[0];
 }
